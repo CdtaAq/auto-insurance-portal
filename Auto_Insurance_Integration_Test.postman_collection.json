@@ -1,0 +1,118 @@
+{
+  "info": {
+    "name": "Auto Insurance Integration Test",
+    "_postman_id": "12345678-90ab-cdef-1234-567890abcdef",
+    "description": "Full flow: Register → Login → Policy → Upload → Payment → Email",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Register",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"USER\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/auth/register", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "auth", "register"] }
+      }
+    },
+    {
+      "name": "2. Login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "auth", "login"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.environment.set(\"accessToken\", json.token);"
+          ],
+          "type": "text/javascript"
+        }
+      }]
+    },
+    {
+      "name": "3. Create Policy",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehicleNumber\": \"KA01AB1234\",\n  \"driverLicense\": \"DL-12345\",\n  \"location\": \"Bangalore\",\n  \"coverageAmount\": 100000\n}"
+        },
+        "url": { "raw": "http://localhost:8081/api/policy/create", "protocol": "http", "host": ["localhost"], "port": "8081", "path": ["api", "policy", "create"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.environment.set(\"policyId\", json.id);"
+          ],
+          "type": "text/javascript"
+        }
+      }]
+    },
+    {
+      "name": "4. Upload Document",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": "/absolute/path/to/sample.pdf" },
+            { "key": "policyId", "value": "{{policyId}}" }
+          ]
+        },
+        "url": { "raw": "http://localhost:8082/api/file/upload", "protocol": "http", "host": ["localhost"], "port": "8082", "path": ["api", "file", "upload"] }
+      }
+    },
+    {
+      "name": "5. Initiate Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 5000,\n  \"currency\": \"usd\",\n  \"policyId\": \"{{policyId}}\"\n}"
+        },
+        "url": { "raw": "http://localhost:8083/api/payment/charge", "protocol": "http", "host": ["localhost"], "port": "8083", "path": ["api", "payment", "charge"] }
+      }
+    },
+    {
+      "name": "6. Send Email with PDF",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toEmail\": \"john@example.com\",\n  \"policyId\": \"{{policyId}}\"\n}"
+        },
+        "url": { "raw": "http://localhost:8084/api/notify/send-policy", "protocol": "http", "host": ["localhost"], "port": "8084", "path": ["api", "notify", "send-policy"] }
+      }
+    }
+  ]
+}
