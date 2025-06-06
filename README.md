@@ -1,5 +1,9 @@
 # auto-insurance-portal
 
+https://github.com/CdtaAq/auth-service.git
+https://github.com/CdtaAq/insurance-service.git
+https://github.com/CdtaAq/notification-service.git
+https://github.com/CdtaAq/payment-service.git
 # Auto Insurance Portal – Postman Collection
 
 This Postman collection automates the full flow for the Auto Insurance Portal system, including:
